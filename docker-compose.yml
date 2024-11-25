@@ -1,0 +1,91 @@
+version: '3.8'
+
+volumes:
+  grafana_data: {}
+  prometheus_data: {}
+  alertmanager-data: {}
+  loki-data: {}
+  
+services:
+  grafana:
+    image: grafana/grafana:9.5.20
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana:/etc/grafana/provisioning:rw
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=devops
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+      - '--storage.tsdb.retention.time=30d'      
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+    networks:
+      - monitoring
+
+  loki:
+      image: grafana/loki:2.4.1
+      container_name: loki
+      restart: unless-stopped
+      volumes:
+        - loki-data:/loki
+        - ./loki/loki_alerts.yml:/etc/loki/rules/fake/loki_alerts.yml:ro
+        - ./loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+      command: -config.file=/etc/loki/local-config.yaml
+      ports:
+        - "3100:3100"
+      networks:
+        - monitoring
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    privileged: true
+    volumes:
+         - ./alertmanager/alertmanager.yml:/alertmanager.yml
+         - alertmanager-data:/data
+    command:
+        - '--config.file=/alertmanager.yml'
+    ports:
+      - '9093:9093'
+
+networks:
+  monitoring:
+    driver: bridge

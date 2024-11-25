@@ -1,0 +1,28 @@
+groups:
+- name: kafka
+  rules:
+  - alert: KafkaLagTooHigh
+    expr: kafka_consumergroup_lag_sum  > 10
+    for: 0m
+    labels:
+      severity: service
+    annotations:
+      summary: "Kafka Consumer Lag Too High"
+      description: "The consumer group lag for {{ $labels.consumergroup }} in topic {{ $labels.topic }} is too high."
+      server: "{{ $labels.job }}"
+      Kafka_ui: "{{ if eq $labels.job \"kafka-listen\" }}kafka-ui-retail.mykiot.vn{{ else }}kafka-ui-dev.mykiot.vn{{ end }}"
+      Topic: "{{ $labels.topic }}"
+      Message_behind: "{{ $value }} messsage"
+      Consumergroup: "{{ $labels.consumergroup }}"
+  - alert: kafka_no_members_consumergroup
+    expr: kafka_consumergroup_members == 0
+    for: 0m
+    labels:
+      severity: service
+    annotations:
+      summary: "Kafka comsumergroup state empty"
+      description: "The consumergroup  {{ $labels.consumergroup }} đang trong trạng thái empty"
+      server: "{{ $labels.job }}"
+      Kafka_ui: "{{ if eq $labels.job \"kafka-listen\" }}kafka-ui-retail.mykiot.vn{{ else }}kafka-ui-dev.mykiot.vn{{ end }}"
+      Consumergroup: "{{ $labels.consumergroup }}"
+

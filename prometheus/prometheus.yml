@@ -1,0 +1,73 @@
+global:
+  # scrape_interval: 1m
+  # How frequently to scrape targets
+  scrape_interval: 10s
+
+
+rule_files:
+  - linux-rules.yml
+  - mariadb-rules.yml
+  - kafka-rules.yml
+  - mongodb-rules.yml
+  
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ["10.24.28.116:9093"]
+
+scrape_configs:
+  - job_name: "prometheus"
+    scrape_interval: 5s
+    static_configs:
+      - targets: ["10.24.28.116:9100"]
+      - targets: ["10.24.28.117:9100"]
+      - targets: ["10.24.28.118:9100"]
+      - targets: ["10.24.28.119:9100"]
+      - targets: ["10.24.28.120:9100"]
+    relabel_configs:
+    - source_labels: [__address__]
+      regex: ([^:]+)(:[0-9]+)?
+      target_label: instance
+      replacement: $1 
+
+  - job_name: "node_exporter"
+    scrape_interval: 5s  
+    static_configs:
+      - targets: ["10.24.28.116:9100"]
+      - targets: ["10.24.28.117:9100"]
+      - targets: ["10.24.28.118:9100"]
+      - targets: ["10.24.28.119:9100"]
+      - targets: ["10.24.28.120:9100"]
+    relabel_configs:
+    - source_labels: [__address__]
+      regex: ([^:]+)(:[0-9]+)?
+      target_label: instance
+      replacement: $1
+
+  - job_name: "server"
+    scrape_interval: 15s  
+    static_configs:
+      - targets: ["10.24.28.116:9100"]
+      - targets: ["10.24.28.117:9100"]
+      - targets: ["10.24.28.118:9100"]
+      - targets: ["10.24.28.119:9100"]
+      - targets: ["10.24.28.120:9100"]
+    relabel_configs:
+    - source_labels: [__address__]
+      regex: ([^:]+)(:[0-9]+)?
+      target_label: instance
+      replacement: $1 
+
+  - job_name: "mongodb"
+    scrape_interval: 15s  
+    static_configs:
+      - targets: ["10.24.28.116:9216"]
+      - targets: ["10.24.28.117:9216"]
+      - targets: ["10.24.28.118:9216"]
+      - targets: ["10.24.28.119:9216"]
+      - targets: ["10.24.28.120:9216"]
+    relabel_configs:
+    - source_labels: [__address__]
+      regex: ([^:]+)(:[0-9]+)?
+      target_label: instance
+      replacement: $1

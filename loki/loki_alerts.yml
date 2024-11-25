@@ -1,0 +1,49 @@
+groups:
+  - name: ErrorLogsAlert
+    rules:
+      - alert: MykiotServiceErrorLogs
+        expr: |
+          count_over_time({namespace="new-mykiot-prod"} |="ERROR"  | pattern `<description>` [2m]) > 3
+        for: 0m
+        annotations:
+          title: "Error logs in {{ $labels.description }}"
+          description: "ERROR Logs: {{ $labels.description }}"
+        labels:
+          severity: critical
+          category: logs
+  - name: 502 Bad Gateway
+    rules:
+      - alert: 502 Bad Gateway
+        expr: |
+          count_over_time({namespace="new-mykiot-prod"} |="502" | pattern `<description>` [2m]) > 3
+        for: 0m
+        annotations:
+          title: "error logs server in {{ $labels.description }}"
+          description: "error Logs: {{ $labels.description }}"
+        labels:
+          severity: critical
+          category: logs
+  - name: 503 Service Unavailable
+    rules: 
+      - alert: 503 Service Unavailable
+        expr: |
+          count_over_time({namespace="new-mykiot-prod"} |="503" | pattern `<description>` [2m]) > 2
+        for: 0m
+        annotations:
+          title: "error logs server in {{ $labels.description }}"
+          description: "error Logs: {{ $labels.description }}"
+        labels:
+          severity: critical
+          category: logs
+  - name: 504 Gateway Timeout
+    rules: 
+      - alert: 504 Gateway Timeout
+        expr: |
+          count_over_time({namespace="new-mykiot-prod"} |="504" | pattern `<description>` [2m]) > 2
+        for: 0m
+        annotations:
+          title: "error logs server in {{ $labels.description }}"
+          description: "error Logs: {{ $labels.description }}"
+        labels:
+          severity: critical
+          category: logs
